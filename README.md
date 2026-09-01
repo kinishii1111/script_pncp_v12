@@ -11,7 +11,7 @@ O objetivo é filtrar um *stream* de dados de alto volume (milhares de licitaç�
 * **NLP/Modelagem:** `nltk` (stopwords), `scikit-learn` (`Pipeline`, `TfidfVectorizer`, `SGDClassifier`)
 * **Serialização:** `joblib`
 
-**O que isto substitui no processo manual (sessão 2026-09-01):** ver `PROCESSO.md`.  
+**Onde paramos:** `CHECKPOINT.md`. **Sessão manual vs CLI:** `PROCESSO.md`.  
 **Remotes:** `REFERENCIA.md` (colega = `upstream`, Cleiton = `referencia` só leitura).  
 **Filtros estilo Licita Já (sem pagar a API deles):** `LICITAJA.md`.  
 **API PNCP (oficial):** `PNCP.md` + `docs/pncp-consulta-openapi.json`.
