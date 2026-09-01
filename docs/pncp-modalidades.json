@@ -1,0 +1,97 @@
+[
+  {
+    "id": 1,
+    "nome": "Leilão - Eletrônico",
+    "statusAtivo": true
+  },
+  {
+    "id": 2,
+    "nome": "Diálogo Competitivo",
+    "statusAtivo": true
+  },
+  {
+    "id": 3,
+    "nome": "Concurso",
+    "statusAtivo": true
+  },
+  {
+    "id": 4,
+    "nome": "Concorrência - Eletrônica",
+    "statusAtivo": true
+  },
+  {
+    "id": 5,
+    "nome": "Concorrência - Presencial",
+    "statusAtivo": true
+  },
+  {
+    "id": 6,
+    "nome": "Pregão - Eletrônico",
+    "statusAtivo": true
+  },
+  {
+    "id": 7,
+    "nome": "Pregão - Presencial",
+    "statusAtivo": true
+  },
+  {
+    "id": 8,
+    "nome": "Dispensa",
+    "statusAtivo": true
+  },
+  {
+    "id": 9,
+    "nome": "Inexigibilidade",
+    "statusAtivo": true
+  },
+  {
+    "id": 10,
+    "nome": "Manifestação de Interesse",
+    "statusAtivo": true
+  },
+  {
+    "id": 11,
+    "nome": "Pré-qualificação",
+    "statusAtivo": true
+  },
+  {
+    "id": 12,
+    "nome": "Credenciamento",
+    "statusAtivo": true
+  },
+  {
+    "id": 13,
+    "nome": "Leilão - Presencial",
+    "statusAtivo": true
+  },
+  {
+    "id": 14,
+    "nome": "Inaplicabilidade da Licitação",
+    "statusAtivo": true
+  },
+  {
+    "id": 15,
+    "nome": "Chamada pública",
+    "statusAtivo": true
+  },
+  {
+    "id": 16,
+    "nome": "Concorrência – Eletrônica Internacional ",
+    "statusAtivo": true
+  },
+  {
+    "id": 17,
+    "nome": "Concorrência – Presencial Internacional ",
+    "statusAtivo": true
+  },
+  {
+    "id": 18,
+    "nome": "Pregão – Eletrônico Internacional ",
+    "statusAtivo": true
+  },
+  {
+    "id": 19,
+    "nome": "Pregão – Presencial Internacional ",
+    "statusAtivo": true
+  }
+]

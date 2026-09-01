@@ -26,4 +26,5 @@ Detalhe/itens/PDF (depois do filtro):
 
 Pausa entre páginas já está no script (429). Não paralelizar rajada.
 
-Contexto do que era manual: `PROCESSO.md`.
+Contexto do que era manual: `PROCESSO.md`.  
+Contrato da API: `PNCP.md` (consulta pública, data `yyyyMMdd`, modalidade obrigatória em `publicacao`).
