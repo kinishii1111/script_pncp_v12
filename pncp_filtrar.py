@@ -40,6 +40,11 @@ def main() -> int:
     ap.add_argument("--keyword")
     ap.add_argument("--cidade")
     ap.add_argument("--ordem", choices=("score", "pub", "encerramento", "valor", "uf"), default="score")
+    ap.add_argument(
+        "--sem-nicho",
+        action="store_true",
+        help="ignora léxico hidrômetro; filtra só --keyword (e UF/valor/cidade)",
+    )
     args = ap.parse_args()
 
     db = Path(args.db)
@@ -47,19 +52,25 @@ def main() -> int:
         print(f"sem coleta: {db} — rode python3 pncp_coletar.py primeiro", file=sys.stderr)
         return 2
 
-    arquivos = resolver_datasets(args.datasets)
-    textos: list[str] = []
-    for ds in arquivos:
-        textos.extend(carregar_dataset(ds))
-    seen: set[str] = set()
-    uniq = []
-    for t in textos:
-        k = fold(t)
-        if k not in seen:
-            seen.add(k)
-            uniq.append(t)
-    extras = extra_frases(uniq)
-    print(f"[nicho] {len(uniq)} textos db={db}", file=sys.stderr)
+    arquivos: list = []
+    extras: list[str] = []
+    if not args.sem_nicho:
+        arquivos = resolver_datasets(args.datasets)
+        textos: list[str] = []
+        for ds in arquivos:
+            textos.extend(carregar_dataset(ds))
+        seen: set[str] = set()
+        uniq = []
+        for t in textos:
+            k = fold(t)
+            if k not in seen:
+                seen.add(k)
+                uniq.append(t)
+        extras = extra_frases(uniq)
+        print(f"[nicho] {len(uniq)} textos db={db}", file=sys.stderr)
+    elif not args.keyword:
+        print("--sem-nicho exige --keyword", file=sys.stderr)
+        return 2
 
     agora = datetime.now(TZ)
     horas = args.dias * 24 if args.dias else (args.horas if args.horas is not None else 24)
@@ -75,12 +86,17 @@ def main() -> int:
         if not pub or pub < corte:
             continue
         obj = it.get("objetoCompra") or ""
-        sc, hits = pontuar(obj, extras)
-        if sc < args.min_score or hits == ["bloqueio"]:
-            continue
-        if keywords:
-            fo = fold(obj)
+        fo = fold(obj)
+        if args.sem_nicho:
             if not any(k in fo for k in keywords):
+                continue
+            hits = [k for k in keywords if k in fo]
+            sc = 3 * len(hits)
+        else:
+            sc, hits = pontuar(obj, extras)
+            if sc < args.min_score or hits == ["bloqueio"]:
+                continue
+            if keywords and not any(k in fo for k in keywords):
                 continue
         if args.abertos:
             enc = parse_dt(it.get("dataEncerramentoProposta"))
