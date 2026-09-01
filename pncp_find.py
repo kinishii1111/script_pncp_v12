@@ -234,13 +234,17 @@ def enriquece(it: dict, sc: int, hits: list[str], pub: datetime) -> dict:
     }
 
 
-def gravar_xlsx(rows: list[dict], path: Path) -> None:
+def gravar_xlsx(rows: list[dict], path: Path, meta: dict | None = None) -> None:
     from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill
+    from openpyxl.utils import get_column_letter
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "nicho"
+    ws.title = "revisao"
     cols = [
+        "ok",
+        "comentario",
         "score",
         "numero_pncp",
         "data_publicacao",
@@ -255,9 +259,56 @@ def gravar_xlsx(rows: list[dict], path: Path) -> None:
         "link_pncp",
         "hits",
     ]
+    hdr_fill = PatternFill("solid", "1F4E79")
+    hdr_font = Font(color="FFFFFF", bold=True)
+    wrap = Alignment(wrap_text=True, vertical="top")
     ws.append(cols)
+    for c, _ in enumerate(cols, 1):
+        cell = ws.cell(1, c)
+        cell.fill = hdr_fill
+        cell.font = hdr_font
     for r in rows:
-        ws.append([", ".join(r["hits"]) if c == "hits" else r.get(c) for c in cols])
+        line = []
+        for c in cols:
+            if c == "ok":
+                line.append("")
+            elif c == "comentario":
+                line.append("")
+            elif c == "hits":
+                line.append(", ".join(r.get("hits") or []))
+            else:
+                line.append(r.get(c))
+        ws.append(line)
+    for i in range(2, len(rows) + 2):
+        ws.row_dimensions[i].height = 48
+        for c in range(1, len(cols) + 1):
+            ws.cell(i, c).alignment = wrap
+            if cols[c - 1] == "link_pncp" and ws.cell(i, c).value:
+                ws.cell(i, c).hyperlink = str(ws.cell(i, c).value)
+                ws.cell(i, c).font = Font(color="0563C1", underline="single")
+    widths = {"ok": 8, "comentario": 28, "objeto": 70, "orgao": 36, "link_pncp": 40, "hits": 28}
+    for i, name in enumerate(cols, 1):
+        ws.column_dimensions[get_column_letter(i)].width = widths.get(name, 18)
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{get_column_letter(len(cols))}{max(len(rows)+1, 2)}"
+
+    nota = wb.create_sheet("como_revisar")
+    nota["A1"] = "ok"
+    nota["B1"] = "1 = encaixa no nicho (hidrômetro / vazão / pressão / calibração do dataset). 0 = falso positivo. vazio = ainda não viu."
+    nota["A2"] = "comentario"
+    nota["B2"] = "Se 0: por que (ex. decibelímetro, odonto, só 'registro de preços'). Se 1 e o filtro quase perdeu: anota a palavra que faltou."
+    nota["A3"] = "corte"
+    nota["B3"] = (meta or {}).get("corte", "")
+    nota["A4"] = "coletados"
+    nota["B4"] = (meta or {}).get("coletados", "")
+    nota["A5"] = "nicho"
+    nota["B5"] = len(rows)
+    nota["A6"] = "datasets"
+    nota["B6"] = ", ".join((meta or {}).get("datasets") or [])
+    nota["A7"] = "comando"
+    nota["B7"] = "python3 pncp_find.py --horas 24 --json --xlsx este_arquivo.xlsx"
+    nota.column_dimensions["A"].width = 14
+    nota.column_dimensions["B"].width = 110
     wb.save(path)
 
 
@@ -344,7 +395,7 @@ def main() -> int:
         "itens": hits_out,
     }
     if args.xlsx:
-        gravar_xlsx(hits_out, Path(args.xlsx).expanduser())
+        gravar_xlsx(hits_out, Path(args.xlsx).expanduser(), meta=payload)
         print(f"[xlsx] {args.xlsx}", file=sys.stderr)
 
     # agentes leem stdout; logs vão em stderr
