@@ -74,7 +74,17 @@ Keyword no servidor, valor min/max no query, porte de município, “smart searc
 
 ## Rate limit
 
-Não está no OAS. Produção: **429** se paginar rápido; 502/503/timeout em rajada. `fetch_retry.py` espera ≥8s no 429. `tamanhoPagina=50`. Pausa default 0.7s.
+Não está no OAS. HTML `Limite de requisições excedido`, **sem** `Retry-After`. Mesmo IP.
+
+O que **não** contorna: paralelo, outro User-Agent, rajada. Piora.
+
+O que reduz tempo de parede:
+- **janela de até 7 dias** numa paginação (`dataInicial`+`dataFinal`) em vez de 1 request por dia
+- `requests.Session` (keep-alive)
+- no 429: **uma** espera ~20s e pausa entre páginas sobe pra 1.2s
+- `tamanhoPagina=50` (teto da consulta de contratação)
+
+`pncp_coletar.py --dias 30` usa janelas de 7d e mods 6,8,4.
 
 ## Atualizar os JSON
 

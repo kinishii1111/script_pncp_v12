@@ -183,6 +183,21 @@ def listar_dias(corte: datetime, fim: datetime | None = None) -> list[str]:
     return out
 
 
+def listar_janelas(
+    corte: datetime, fim: datetime | None = None, tamanho: int = 7
+) -> list[tuple[str, str]]:
+    """Blocos [ini, fim] de até `tamanho` dias (menos HTTP que 1 dia por vez)."""
+    fim = fim or datetime.now(TZ)
+    d = corte.date()
+    end = fim.date()
+    out: list[tuple[str, str]] = []
+    while d <= end:
+        bloco_fim = min(d + timedelta(days=tamanho - 1), end)
+        out.append((d.strftime("%Y%m%d"), bloco_fim.strftime("%Y%m%d")))
+        d = bloco_fim + timedelta(days=1)
+    return out
+
+
 def coletar(
     corte: datetime,
     pausa: float,

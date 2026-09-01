@@ -10,6 +10,14 @@ from typing import Optional, Tuple
 
 import requests
 
+# Uma sessão: keep-alive. Recriar GET a cada página estoura o 429.
+_SESSION = requests.Session()
+_SESSION.headers.update(
+    {"Accept": "application/json", "User-Agent": "pncp-find/1"}
+)
+# pausa entre páginas depois de um 429 (o coletor lê isso)
+pausa_sugerida = 0.5
+
 
 def _log(msg: str) -> None:
     print(msg, file=sys.stderr)
@@ -20,7 +28,7 @@ class HttpRetryClient:
 
     def __init__(
         self,
-        max_tentativas: int = 5,
+        max_tentativas: int = 4,
         backoff_inicial: float = 1.0,
         timeout: int = 45,
     ) -> None:
@@ -57,10 +65,9 @@ class HttpRetryClient:
 
         while tentativas < self.max_tentativas:
             try:
-                resposta = requests.get(
+                resposta = _SESSION.get(
                     url,
                     params=params,
-                    headers=self._headers,
                     timeout=self.timeout,
                 )
 
@@ -82,14 +89,15 @@ class HttpRetryClient:
 
                 # 429: rate limit do PNCP — espera mais que o backoff padrão
                 if resposta.status_code == 429:
-                    espera = max(backoff, 8.0)
+                    global pausa_sugerida
+                    espera = max(20.0, backoff)
+                    pausa_sugerida = 1.2
                     _log(
-                        f"Erro 429 (Too Many Requests)."
-                        f" Tentando novamente em {espera}s..."
+                        f"429 — espera {espera:.0f}s (não paralelizar; pausa páginas→{pausa_sugerida}s)"
                     )
                     time.sleep(espera)
                     tentativas += 1
-                    backoff *= 2
+                    backoff = min(backoff * 2, 60)
                     continue
 
                 # 500+: erro de servidor, tenta de novo

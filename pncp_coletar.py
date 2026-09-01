@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from configurar_db import configurar_db
-from fetch_retry import fetch_com_retry
-from pncp_find import BASE, PAUSA, TAMANHO, TZ, listar_dias
+from fetch_retry import fetch_com_retry, pausa_sugerida
+from pncp_find import BASE, PAUSA, TAMANHO, TZ, listar_janelas
 from salvar_dados import inserir_dados, ler_progresso, marcar_progresso
 
 DB_DEFAULT = Path(__file__).resolve().parent / "data" / "coleta" / "pncp.db"
@@ -24,21 +24,25 @@ def coletar_db(
     uf: str | None = None,
 ) -> int:
     configurar_db(db)
-    dias = listar_dias(corte)
+    janelas = listar_janelas(corte, tamanho=7)
     total_novos = 0
-    print(f"[coleta] {len(dias)} dias mods={mods}", file=sys.stderr)
-    for dia in dias:
+    print(f"[coleta] {len(janelas)} janelas de 7d mods={mods}", file=sys.stderr)
+    import fetch_retry as fr
+
+    for ini, fim in janelas:
+        chave = f"{ini}_{fim}"
         for mod in mods:
-            prev = ler_progresso(db, dia, mod)
+            prev = ler_progresso(db, chave, mod)
             if prev and prev[0] >= prev[1] and prev[1] > 0:
+                print(f"[skip] {chave} mod={mod}", file=sys.stderr)
                 continue
             pagina = (prev[0] + 1) if prev else 1
             total = prev[1] if prev else 1
             falhou = False
             while pagina <= max(total, 1):
                 params = {
-                    "dataInicial": dia,
-                    "dataFinal": dia,
+                    "dataInicial": ini,
+                    "dataFinal": fim,
                     "codigoModalidadeContratacao": mod,
                     "pagina": pagina,
                     "tamanhoPagina": TAMANHO,
@@ -48,7 +52,7 @@ def coletar_db(
                 ret = fetch_com_retry(BASE, params)
                 if ret is None:
                     print(
-                        f"[warn] {dia} mod={mod} p={pagina} — segue o resto, retoma depois",
+                        f"[warn] {chave} mod={mod} p={pagina} — segue, retoma depois",
                         file=sys.stderr,
                     )
                     falhou = True
@@ -57,14 +61,17 @@ def coletar_db(
                 total = int(total_paginas or 1)
                 n = inserir_dados(db, dados or [], pagina)
                 total_novos += n
-                marcar_progresso(db, dia, mod, pagina, total)
-                print(f"[coleta] {dia} mod={mod} p={pagina}/{total} +{len(dados or [])}", file=sys.stderr)
+                marcar_progresso(db, chave, mod, pagina, total)
+                print(
+                    f"[coleta] {chave} mod={mod} p={pagina}/{total} +{len(dados or [])}",
+                    file=sys.stderr,
+                )
                 if pagina >= total:
                     break
                 pagina += 1
-                time.sleep(pausa)
+                time.sleep(max(pausa, fr.pausa_sugerida))
             if not falhou:
-                time.sleep(min(pausa, 0.3))
+                time.sleep(0.2)
     return total_novos
 
 
