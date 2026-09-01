@@ -12,7 +12,8 @@ O objetivo é filtrar um *stream* de dados de alto volume (milhares de licitaç�
 * **Serialização:** `joblib`
 
 **O que isto substitui no processo manual (sessão 2026-09-01):** ver `PROCESSO.md`.  
-**Remotes:** `REFERENCIA.md` (colega = `upstream`, Cleiton = `referencia` só leitura).
+**Remotes:** `REFERENCIA.md` (colega = `upstream`, Cleiton = `referencia` só leitura).  
+**Filtros estilo Licita Já (sem pagar a API deles):** `LICITAJA.md` — `--uf` `--valor-min` `--valor-max` `--abertos`.
 
 ### Tool de agente (sem Jupyter)
 

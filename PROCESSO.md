@@ -83,6 +83,7 @@ Comando da demanda:
 
 ```bash
 python3 pncp_find.py --horas 24 --abertos --json --xlsx ~/Downloads/pncp-nicho-24h.xlsx
+# opcional, espelho Licita Já: --uf SP --valor-min 10000
 ```
 
-`--modo proposta` do Cleiton **não** é “últimas 24h” (mistura credenciamento velho). Recência = `publicacao` + corte de horas. Oportunidade viva = `--abertos`.
+`--modo proposta` do Cleiton **não** é “últimas 24h” (mistura credenciamento velho). Recência = `publicacao` + corte de horas. Oportunidade viva = `--abertos`. Filtros de produto do Licita Já: `LICITAJA.md`.

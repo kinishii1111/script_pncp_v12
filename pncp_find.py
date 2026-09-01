@@ -171,7 +171,12 @@ def yyyymmdd(d: datetime) -> str:
     return d.strftime("%Y%m%d")
 
 
-def coletar(corte: datetime, pausa: float, mods: tuple[int, ...]) -> list[dict]:
+def coletar(
+    corte: datetime,
+    pausa: float,
+    mods: tuple[int, ...],
+    uf: str | None = None,
+) -> list[dict]:
     hoje = datetime.now(TZ)
     dias = sorted({yyyymmdd(corte), yyyymmdd(hoje)})
     visto: dict[str, dict] = {}
@@ -187,6 +192,8 @@ def coletar(corte: datetime, pausa: float, mods: tuple[int, ...]) -> list[dict]:
                     "pagina": pagina,
                     "tamanhoPagina": TAMANHO,
                 }
+                if uf:
+                    params["uf"] = uf
                 ret = fetch_com_retry(BASE, params)
                 if ret is None:
                     print(f"[warn] falha {dia} mod={mod} p={pagina}", file=sys.stderr)
@@ -335,6 +342,12 @@ def main() -> int:
         default=",".join(str(m) for m in MODALIDADES),
         help="códigos de modalidade separados por vírgula (default 6,8,7,4,5,9)",
     )
+    ap.add_argument(
+        "--uf",
+        help="UFs separadas por vírgula (ex. SP,PR). Uma UF vai na API PNCP; várias filtram depois.",
+    )
+    ap.add_argument("--valor-min", type=float, default=None, dest="valor_min")
+    ap.add_argument("--valor-max", type=float, default=None, dest="valor_max")
     args = ap.parse_args()
     mods = tuple(int(x) for x in args.mods.split(",") if x.strip())
 
@@ -369,7 +382,9 @@ def main() -> int:
 
     agora = datetime.now(TZ)
     corte = agora - timedelta(hours=args.horas)
-    bruto = coletar(corte, args.pausa, mods)
+    ufs = [u.strip().upper() for u in (args.uf or "").split(",") if u.strip()]
+    uf_api = ufs[0] if len(ufs) == 1 else None
+    bruto = coletar(corte, args.pausa, mods, uf=uf_api)
 
     hits_out = []
     for it in bruto:
@@ -382,6 +397,16 @@ def main() -> int:
         if args.abertos:
             enc = parse_dt(it.get("dataEncerramentoProposta"))
             if enc is not None and enc < agora:
+                continue
+        u = (it.get("unidadeOrgao") or {}).get("ufSigla") or ""
+        if ufs and u.upper() not in ufs:
+            continue
+        val = it.get("valorTotalEstimado")
+        if args.valor_min is not None:
+            if not isinstance(val, (int, float)) or val < args.valor_min:
+                continue
+        if args.valor_max is not None:
+            if isinstance(val, (int, float)) and val > args.valor_max:
                 continue
         hits_out.append(enriquece(it, sc, hits, pub))
     hits_out.sort(key=lambda r: (-r["score"], r["data_publicacao"]), reverse=False)
