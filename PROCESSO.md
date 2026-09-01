@@ -61,8 +61,28 @@ python3 pncp_find.py --horas 24 --json
 
 Skill: `SKILL.md`. Remotes: `REFERENCIA.md`. Não scrape `pncp.gov.br` HTML. Não abra `script_pncp_v12.ipynb` pra achar edital.
 
-## Próximo (quando doer)
+## Caminho da demanda (editais recentes × nicho)
 
-1. `--xlsx` + `--detalhe` (itens/arquivos só do que passou).
-2. Cache SQLite do colega pra não re-paginar o mesmo dia.
-3. SGD só com negativos reais.
+Demanda: **os mais novos que encaixam no dataset**, pra agente achar — não varrer portal.
+
+```
+API publicacao (N horas)  →  léxico dataset  →  JSON/xlsx  →  (depois) itens/PDF
+```
+
+| passo | status | o que é |
+|---|---|---|
+| 1. Coleta 24h + retry | **pronto** | `pncp_find.py` — `fetch_retry` do Cleiton |
+| 2. Filtro nicho (frase forte) | **pronto** | 2024+2025 em `data/nicho/`; 2023 vazio |
+| 3. Ainda disputável | **pronto** | `--abertos` (encerra no futuro; sem data entra) |
+| 4. Planilha | **pronto** | `--xlsx saida.xlsx` |
+| 5. Itens + TR só do que passou | próximo | `--detalhe` → GET itens/arquivos |
+| 6. Cache do dia | depois | SQLite JSON1 do colega, não re-paginar |
+| 7. SGD | só com `0` | dump do dia rotulado; senão esquece |
+
+Comando da demanda:
+
+```bash
+python3 pncp_find.py --horas 24 --abertos --json --xlsx ~/Downloads/pncp-nicho-24h.xlsx
+```
+
+`--modo proposta` do Cleiton **não** é “últimas 24h” (mistura credenciamento velho). Recência = `publicacao` + corte de horas. Oportunidade viva = `--abertos`.

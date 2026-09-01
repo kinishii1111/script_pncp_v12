@@ -272,6 +272,11 @@ def main() -> int:
     ap.add_argument("--horas", type=int, default=24)
     ap.add_argument("--json", action="store_true", help="stdout JSON (default para agente)")
     ap.add_argument("--xlsx", help="grava planilha além do JSON")
+    ap.add_argument(
+        "--abertos",
+        action="store_true",
+        help="só o que ainda dá pra disputar (encerramento futuro; sem data entra — ex. dispensa)",
+    )
     ap.add_argument("--min-score", type=int, default=3)
     ap.add_argument("--pausa", type=float, default=PAUSA, help="segundos entre páginas")
     ap.add_argument(
@@ -321,8 +326,13 @@ def main() -> int:
         if not pub or pub < corte:
             continue
         sc, hits = pontuar(it.get("objetoCompra") or "", extras)
-        if sc >= args.min_score and hits != ["bloqueio"]:
-            hits_out.append(enriquece(it, sc, hits, pub))
+        if sc < args.min_score or hits == ["bloqueio"]:
+            continue
+        if args.abertos:
+            enc = parse_dt(it.get("dataEncerramentoProposta"))
+            if enc is not None and enc < agora:
+                continue
+        hits_out.append(enriquece(it, sc, hits, pub))
     hits_out.sort(key=lambda r: (-r["score"], r["data_publicacao"]), reverse=False)
     hits_out.sort(key=lambda r: -r["score"])
 
