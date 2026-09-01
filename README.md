@@ -16,7 +16,8 @@ O objetivo é filtrar um *stream* de dados de alto volume (milhares de licitaç�
 ### Tool de agente (sem Jupyter)
 
 ```bash
-python3 pncp_find.py --dataset ~/Downloads/dataset_2025.xlsx --horas 24 --json
+python3 pncp_find.py --horas 24 --json
+# usa data/nicho/dataset_2024.xlsx + dataset_2025.xlsx (2023 no zip veio sem texto)
 ```
 
 Stdout JSON. Skill: `SKILL.md`. O notebook do colega fica como origem do SGD — só entra quando houver classe `0`.

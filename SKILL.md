@@ -11,7 +11,8 @@ Não scrape o portal. Não abra o `.ipynb`.
 
 ```bash
 cd /home/kin/script_pncp_v12
-python3 pncp_find.py --dataset ~/Downloads/dataset_2025.xlsx --horas 24 --json
+python3 pncp_find.py --horas 24 --json
+# gabarito default: data/nicho/dataset_2023.xlsx + 2024 + 2025 (2023 hoje está vazio)
 ```
 
 Stdout = JSON `{corte, coletados, nicho, itens[]}`. Logs em stderr.

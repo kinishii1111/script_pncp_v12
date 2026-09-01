@@ -71,6 +71,17 @@ def fold(s: str) -> str:
     return re.sub(r"\s+", " ", s.lower())
 
 
+def _celula_ok(v) -> str:
+    if v is None:
+        return ""
+    s = str(v).strip()
+    if len(s) < 8:
+        return ""
+    if s.startswith("=") or "DUMMYFUNCTION" in s or "REGEXREPLACE" in s:
+        return ""
+    return s
+
+
 def carregar_dataset(path: Path) -> list[str]:
     import openpyxl
 
@@ -81,11 +92,29 @@ def carregar_dataset(path: Path) -> list[str]:
     next(rows, None)
     for row in rows:
         row = list(row) + [None, None]
-        t = row[1] or row[0]
-        if t and str(t).strip():
-            textos.append(str(t))
+        t = _celula_ok(row[1]) or _celula_ok(row[0])
+        if t:
+            textos.append(t)
     wb.close()
     return textos
+
+
+def resolver_datasets(paths: list[str] | None) -> list[Path]:
+    if paths:
+        out = []
+        for p in paths:
+            q = Path(p).expanduser()
+            if q.is_dir():
+                out.extend(sorted(q.glob("dataset_*.xlsx")))
+            else:
+                out.append(q)
+        return out
+    aqui = Path(__file__).resolve().parent / "data" / "nicho"
+    found = sorted(aqui.glob("dataset_*.xlsx"))
+    if found:
+        return found
+    dl = Path.home() / "Downloads"
+    return sorted(dl.glob("dataset_20*.xlsx"))
 
 
 _SINAL = re.compile(
@@ -234,7 +263,12 @@ def gravar_xlsx(rows: list[dict], path: Path) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="PNCP 24h filtrado pelo dataset de nicho (tool de agente).")
-    ap.add_argument("--dataset", required=True, help="xlsx do gabarito (texto_bruto / x / y)")
+    ap.add_argument(
+        "--dataset",
+        action="append",
+        dest="datasets",
+        help="xlsx do gabarito (repetível) ou pasta. Default: data/nicho/dataset_*.xlsx",
+    )
     ap.add_argument("--horas", type=int, default=24)
     ap.add_argument("--json", action="store_true", help="stdout JSON (default para agente)")
     ap.add_argument("--xlsx", help="grava planilha além do JSON")
@@ -248,14 +282,34 @@ def main() -> int:
     args = ap.parse_args()
     mods = tuple(int(x) for x in args.mods.split(",") if x.strip())
 
-    ds = Path(args.dataset).expanduser()
-    if not ds.exists():
-        print(f"dataset não achado: {ds}", file=sys.stderr)
-        return 2
-
-    textos = carregar_dataset(ds)
+    arquivos = resolver_datasets(args.datasets)
+    textos: list[str] = []
+    for ds in arquivos:
+        if not ds.exists():
+            print(f"dataset não achado: {ds}", file=sys.stderr)
+            return 2
+        chunk = carregar_dataset(ds)
+        print(f"[nicho] {ds.name}: {len(chunk)} textos", file=sys.stderr)
+        if len(chunk) == 0:
+            print(
+                f"[nicho] AVISO {ds.name} veio vazio (export Google com fórmula, sem valor). Ignorado.",
+                file=sys.stderr,
+            )
+        textos.extend(chunk)
+    # dedup
+    seen = set()
+    uniq = []
+    for t in textos:
+        k = fold(t)
+        if k not in seen:
+            seen.add(k)
+            uniq.append(t)
+    textos = uniq
     extras = extra_frases(textos)
-    print(f"[nicho] {len(textos)} textos, {len(extras)} bigramas extra", file=sys.stderr)
+    print(f"[nicho] união {len(textos)} textos, {len(extras)} bigramas extra", file=sys.stderr)
+    if not textos:
+        print("nenhum texto útil nos datasets", file=sys.stderr)
+        return 2
 
     agora = datetime.now(TZ)
     corte = agora - timedelta(hours=args.horas)
@@ -276,7 +330,7 @@ def main() -> int:
         "corte": corte.isoformat(),
         "coletados": len(bruto),
         "nicho": len(hits_out),
-        "dataset": str(ds),
+        "datasets": [str(p) for p in arquivos],
         "itens": hits_out,
     }
     if args.xlsx:

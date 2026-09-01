@@ -3,5 +3,8 @@ __pycache__/
 *.pyc
 *.db
 *.joblib
-data/
+data/coleta/
+data/rotulacao/
+data/treinamento/
+data/resultado/
 .env
