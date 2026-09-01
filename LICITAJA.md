@@ -43,6 +43,23 @@ Campo `number2` = número PNCP. Ou seja: o índice deles **aponta pro mesmo obje
 
 ## Uso parecido com o buscador deles
 
+O buscador **já é o `pncp_find.py`**. Mesmos eixos: quando saiu, ainda abre, o quê, onde, quanto.
+
 ```bash
+# nicho do dataset, 24h, ainda aberto, SP, valor mínimo
 python3 pncp_find.py --horas 24 --abertos --uf SP --valor-min 10000 --xlsx ~/Downloads/pncp-revisao-24h.xlsx --json
+
+# keyword extra (vírgula = OU entre termos), cidade, ordem
+python3 pncp_find.py --horas 24 --keyword hidrometro,macromedidor --cidade Itu --ordem valor --json
+
+# sem léxico (só filtros crus, tipo search sem conta)
+python3 pncp_find.py --sem-nicho --keyword hidrometro --uf SP --horas 48 --json
 ```
+
+| Licita Já `order` | nosso `--ordem` |
+|---|---|
+| 1 data registro | `pub` |
+| 0 abertura proposta | `encerramento` |
+| (score nosso) | `score` (default) |
+| local | `uf` |
+| valor | `valor` |

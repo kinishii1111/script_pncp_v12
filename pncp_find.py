@@ -320,7 +320,9 @@ def gravar_xlsx(rows: list[dict], path: Path, meta: dict | None = None) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="PNCP 24h filtrado pelo dataset de nicho (tool de agente).")
+    ap = argparse.ArgumentParser(
+        description="Buscador PNCP (espelho Licita Já): recência + nicho/keyword + UF/cidade/valor."
+    )
     ap.add_argument(
         "--dataset",
         action="append",
@@ -348,6 +350,22 @@ def main() -> int:
     )
     ap.add_argument("--valor-min", type=float, default=None, dest="valor_min")
     ap.add_argument("--valor-max", type=float, default=None, dest="valor_max")
+    ap.add_argument(
+        "--keyword",
+        help="termos extra no objeto, separados por vírgula (AND com o nicho; um termo basta)",
+    )
+    ap.add_argument("--cidade", help="municípios, vírgula (substring, ex. Itu,Campinas)")
+    ap.add_argument(
+        "--ordem",
+        choices=("score", "pub", "encerramento", "valor", "uf"),
+        default="score",
+        help="ordenação (Licita Já: registro≈pub, abertura≈encerramento)",
+    )
+    ap.add_argument(
+        "--sem-nicho",
+        action="store_true",
+        help="não aplica léxico do dataset; só keyword/UF/valor/horas (buscador cru)",
+    )
     args = ap.parse_args()
     mods = tuple(int(x) for x in args.mods.split(",") if x.strip())
 
@@ -376,9 +394,11 @@ def main() -> int:
     textos = uniq
     extras = extra_frases(textos)
     print(f"[nicho] união {len(textos)} textos, {len(extras)} bigramas extra", file=sys.stderr)
-    if not textos:
+    if not args.sem_nicho and not textos:
         print("nenhum texto útil nos datasets", file=sys.stderr)
         return 2
+    keywords = [fold(k) for k in (args.keyword or "").split(",") if k.strip()]
+    cidades = [fold(c) for c in (args.cidade or "").split(",") if c.strip()]
 
     agora = datetime.now(TZ)
     corte = agora - timedelta(hours=args.horas)
@@ -391,15 +411,27 @@ def main() -> int:
         pub = parse_dt(it.get("dataPublicacaoPncp") or it.get("dataInclusao"))
         if not pub or pub < corte:
             continue
-        sc, hits = pontuar(it.get("objetoCompra") or "", extras)
-        if sc < args.min_score or hits == ["bloqueio"]:
-            continue
+        obj = it.get("objetoCompra") or ""
+        if args.sem_nicho:
+            sc, hits = 0, []
+        else:
+            sc, hits = pontuar(obj, extras)
+            if sc < args.min_score or hits == ["bloqueio"]:
+                continue
+        if keywords:
+            fo = fold(obj)
+            if not any(k in fo for k in keywords):
+                continue
+            hits = list(hits) + [f"kw:{k}" for k in keywords if k in fo]
         if args.abertos:
             enc = parse_dt(it.get("dataEncerramentoProposta"))
             if enc is not None and enc < agora:
                 continue
         u = (it.get("unidadeOrgao") or {}).get("ufSigla") or ""
         if ufs and u.upper() not in ufs:
+            continue
+        mun = fold((it.get("unidadeOrgao") or {}).get("municipioNome") or "")
+        if cidades and not any(c in mun for c in cidades):
             continue
         val = it.get("valorTotalEstimado")
         if args.valor_min is not None:
@@ -409,8 +441,20 @@ def main() -> int:
             if isinstance(val, (int, float)) and val > args.valor_max:
                 continue
         hits_out.append(enriquece(it, sc, hits, pub))
-    hits_out.sort(key=lambda r: (-r["score"], r["data_publicacao"]), reverse=False)
-    hits_out.sort(key=lambda r: -r["score"])
+    def _ord(r: dict):
+        if args.ordem == "pub":
+            return r.get("data_publicacao") or ""
+        if args.ordem == "encerramento":
+            return r.get("data_encerramento") or "9999"
+        if args.ordem == "valor":
+            v = r.get("valor_estimado")
+            return -(v if isinstance(v, (int, float)) else -1)
+        if args.ordem == "uf":
+            return r.get("uf") or ""
+        return -r["score"]
+
+    reverse = args.ordem in ("score", "valor")
+    hits_out.sort(key=_ord, reverse=reverse)
 
     payload = {
         "corte": corte.isoformat(),
