@@ -46,7 +46,11 @@ Não puxar: `.env` com chave, DBs, notebooks de 400k, Gemini/GPT como filtro pri
 
 ## Ordem
 
-1. Coleta com retry/pausa do Cleiton (várias modalidades se precisar).
-2. Treino com o xlsx do nicho + negativos do DB.
-3. Classificar o dia → CSV/xlsx.
-4. Só então itens + arquivos das que passaram.
+**Agora (pronto, sem Jupyter):** `python3 pncp_find.py --dataset ~/Downloads/dataset_2025.xlsx --horas 24 --json`
+
+Usa `fetch_retry.py` do Cleiton + léxico do xlsx. SGD do notebook **não** entra: o gabarito só tem classe `1` (erro `got 1 class` que eles já tomaram).
+
+1. Tool de agente = este CLI (stdout JSON). Skill: `SKILL.md`.
+2. Depois: `--xlsx`, itens/arquivos só do que passou, persistir SQLite se o dia for reconsultado.
+3. SGD/BART só quando existir negativo de verdade (dump de um dia inteiro rotulado 0).
+4. Fora: GPT por edital (cota), scrape do HTML, notebook.

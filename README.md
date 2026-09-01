@@ -13,6 +13,14 @@ O objetivo é filtrar um *stream* de dados de alto volume (milhares de licitaç�
 
 **Referências (não misturar na `main` sem decisão):** colega = `upstream` (`flisboa999/script_pncp_v12`); melhorias em Python/CLI = remote `referencia` (`jose-cleiton/script_pncp`). Ver `REFERENCIA.md`.
 
+### Tool de agente (sem Jupyter)
+
+```bash
+python3 pncp_find.py --dataset ~/Downloads/dataset_2025.xlsx --horas 24 --json
+```
+
+Stdout JSON. Skill: `SKILL.md`. O notebook do colega fica como origem do SGD — só entra quando houver classe `0`.
+
 ---
 
 ## Arquitetura e Decisões de Implementação (.)
