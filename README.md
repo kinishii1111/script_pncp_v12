@@ -11,7 +11,8 @@ O objetivo é filtrar um *stream* de dados de alto volume (milhares de licitaç�
 * **NLP/Modelagem:** `nltk` (stopwords), `scikit-learn` (`Pipeline`, `TfidfVectorizer`, `SGDClassifier`)
 * **Serialização:** `joblib`
 
-**Referências (não misturar na `main` sem decisão):** colega = `upstream` (`flisboa999/script_pncp_v12`); melhorias em Python/CLI = remote `referencia` (`jose-cleiton/script_pncp`). Ver `REFERENCIA.md`.
+**O que isto substitui no processo manual (sessão 2026-09-01):** ver `PROCESSO.md`.  
+**Remotes:** `REFERENCIA.md` (colega = `upstream`, Cleiton = `referencia` só leitura).
 
 ### Tool de agente (sem Jupyter)
 

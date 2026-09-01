@@ -40,15 +40,17 @@ Não puxar: `.env` com chave, DBs, notebooks de 400k, Gemini/GPT como filtro pri
 
 ## Encaixe com o que já rodamos
 
-- Gabarito positivo: `~/Downloads/dataset_2025.xlsx` (104 objetos, hidrômetro/vazão/pressão).
-- Inferência alvo: publicação últimas 24h, não varrer 8k no chat.
-- Itens/PDFs (CIS Itu, UFPR, CEGÁS) são etapa *depois* do filtro, não da coleta.
+Histórico mão vs CLI: `PROCESSO.md`.
+
+- Gabarito: `data/nicho/dataset_2024.xlsx` + `dataset_2025.xlsx` (190). 2023 no disco está vazio.
+- Inferência: `pncp_find.py --horas 24 --json`.
+- Itens/PDFs (CIS Itu, UFPR, CEGÁS) continuam **depois** do filtro.
 
 ## Ordem
 
-**Agora (pronto, sem Jupyter):** `python3 pncp_find.py --dataset ~/Downloads/dataset_2025.xlsx --horas 24 --json`
+**Agora:** `python3 pncp_find.py --horas 24 --json`
 
-Usa `fetch_retry.py` do Cleiton + léxico do xlsx. SGD do notebook **não** entra: o gabarito só tem classe `1` (erro `got 1 class` que eles já tomaram).
+Retry do Cleiton + léxico dos xlsx. SGD do notebook **não** entra: gabarito só classe `1`.
 
 1. Tool de agente = este CLI (stdout JSON). Skill: `SKILL.md`.
 2. Depois: `--xlsx`, itens/arquivos só do que passou, persistir SQLite se o dia for reconsultado.

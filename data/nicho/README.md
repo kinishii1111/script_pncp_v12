@@ -5,3 +5,5 @@ Gabarito positivo do colega (`texto_bruto`, `x`, `y=1`).
 - `dataset_2023.xlsx` — export Google Sheets **sem valor** (coluna A vazia, `x` é `REGEXREPLACE`). Rebaixar com valores, não fórmula.
 
 O CLI carrega todos os `dataset_*.xlsx` desta pasta por padrão.
+
+Como isso entra no fluxo (mão vs tool): `../../PROCESSO.md`.

@@ -25,3 +25,5 @@ Detalhe/itens/PDF (depois do filtro):
 `GET .../arquivos`
 
 Pausa entre páginas já está no script (429). Não paralelizar rajada.
+
+Contexto do que era manual: `PROCESSO.md`.
