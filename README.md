@@ -19,15 +19,13 @@ O objetivo é filtrar um *stream* de dados de alto volume (milhares de licitaç�
 ### Tool de agente (sem Jupyter)
 
 ```bash
-```bash
-python3 pncp_coletar.py --horas 24
-python3 pncp_filtrar.py --xlsx ~/Downloads/pncp-revisao-24h.xlsx --json
+python3 pncp_coletar.py --dias 30
+python3 pncp_filtrar.py --dias 30 --xlsx ~/Downloads/pncp-revisao-30d.xlsx --json
+# outro tema, mesmo DB:
+python3 pncp_filtrar.py --dias 30 --sem-nicho --keyword "adobe,canva" --xlsx ~/Downloads/pncp-software-adobe-canvas.xlsx --json
 ```
 
-Scripts: `docs/SCRIPTS.md`. Caminho: `PROCESSO.md`. API: `PNCP.md`.
-```
-
-Stdout JSON. Skill: `SKILL.md`. O notebook do colega fica como origem do SGD — só entra quando houver classe `0`.
+Scripts: `docs/SCRIPTS.md`. Skill: `SKILL.md`. API: `PNCP.md`. SGD do notebook só com classe `0`.
 
 ---
 

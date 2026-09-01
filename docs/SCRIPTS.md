@@ -18,6 +18,13 @@ python3 pncp_status.py
 python3 pncp_filtrar.py --dias 30 --xlsx ~/Downloads/pncp-revisao-30d.xlsx --json
 ```
 
-`--mods 6,8` na coleta se quiser só pregão+dispensa (bem mais rápido).
+`--mods 6,8` na coleta se quiser só pregão+dispensa.
 
-Skill do agente: `SKILL.md` (repo) e `~/.grok/skills/pncp-nicho/`.
+Outro tema no **mesmo** DB (`--sem-nicho`):
+
+```bash
+python3 pncp_filtrar.py --dias 30 --sem-nicho --keyword "adobe,canva" --xlsx ~/Downloads/pncp-software-adobe-canvas.xlsx --json
+python3 pncp_filtrar.py --dias 30 --sem-nicho --keyword "desenvolvimento de site,website,site institucional" --xlsx ~/Downloads/pncp-sites-web.xlsx --json
+```
+
+Skill: `SKILL.md` (repo = fonte) e `~/.grok/skills/pncp-nicho/` (espelho).
