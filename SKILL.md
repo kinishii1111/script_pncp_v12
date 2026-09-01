@@ -1,30 +1,23 @@
 ---
 name: pncp-nicho
 description: >-
-  Achados PNCP das últimas horas no nicho do dataset (hidrômetro, vazão, pressão).
-  API consulta pública, sem token. Use when: licitação, PNCP, oportunidade, edital 24h.
+  Oportunidades PNCP no nicho hidrômetro/vazão/pressão. Coleta SQLite + filtro
+  local. Use when: licitação, PNCP, edital 24h, oportunidade, Licita Já.
 ---
 
-# PNCP nicho (agente)
+# PNCP nicho
 
-Não scrape o portal. Não abra o `.ipynb`.
+Repo: `/home/kin/script_pncp_v12`. Não scrape o portal. Não abra o `.ipynb`.
+Não rode `pncp_find.py` de novo se `data/coleta/pncp.db` já existe.
 
 ```bash
 cd /home/kin/script_pncp_v12
-python3 pncp_find.py --horas 24 --abertos --json
-# gabarito: data/nicho/ (2024+2025). --xlsx opcional.
+# só se o db não existir ou estiver velho (>12h)
+python3 pncp_coletar.py --horas 24
+# testar filtro / gerar planilha (rápido)
+python3 pncp_filtrar.py --xlsx ~/Downloads/pncp-revisao-24h.xlsx --json
 ```
 
-Stdout = JSON `{corte, coletados, nicho, itens[]}`. Logs em stderr.
+Stdout JSON: `{corte, coletados, nicho, itens[]}`. Logs stderr.
 
-Cada item: `numero_pncp`, `objeto`, `orgao`, `uf`, `valor_estimado`, `link_pncp`, `score`.
-
-Detalhe/itens/PDF (depois do filtro):
-
-`GET https://pncp.gov.br/api/pncp/v1/orgaos/{cnpj}/compras/{ano}/{seq}/itens`  
-`GET .../arquivos`
-
-Pausa entre páginas já está no script (429). Não paralelizar rajada.
-
-Contexto do que era manual: `PROCESSO.md`.  
-Contrato da API: `PNCP.md` (consulta pública, data `yyyyMMdd`, modalidade obrigatória em `publicacao`).
+Docs: `PNCP.md` (API), `LICITAJA.md` (filtros), `docs/SCRIPTS.md`, `PROCESSO.md`.

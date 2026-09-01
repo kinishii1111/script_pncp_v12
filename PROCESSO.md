@@ -76,14 +76,14 @@ API publicacao (N horas)  →  léxico dataset  →  JSON/xlsx  →  (depois) it
 | 3. Ainda disputável | **pronto** | `--abertos` (encerra no futuro; sem data entra) |
 | 4. Planilha | **pronto** | `--xlsx saida.xlsx` |
 | 5. Itens + TR só do que passou | próximo | `--detalhe` → GET itens/arquivos |
-| 6. Cache do dia | depois | SQLite JSON1 do colega, não re-paginar |
+| 6. Cache do dia | **pronto** | `pncp_coletar.py` → SQLite; `pncp_filtrar.py` não chama API |
 | 7. SGD | só com `0` | dump do dia rotulado; senão esquece |
 
 Comando da demanda:
 
 ```bash
-python3 pncp_find.py --horas 24 --abertos --json --xlsx ~/Downloads/pncp-nicho-24h.xlsx
-# opcional, espelho Licita Já: --uf SP --valor-min 10000
+python3 pncp_coletar.py --horas 24
+python3 pncp_filtrar.py --xlsx ~/Downloads/pncp-revisao-24h.xlsx --json
 ```
 
 `--modo proposta` do Cleiton **não** é “últimas 24h” (mistura credenciamento velho). Recência = `publicacao` + corte de horas. Oportunidade viva = `--abertos`. Filtros de produto do Licita Já: `LICITAJA.md`.
