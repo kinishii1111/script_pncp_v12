@@ -28,7 +28,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Filtra coleta PNCP (SQLite) pelo nicho.")
     ap.add_argument("--db", default=str(DB_DEFAULT))
     ap.add_argument("--dataset", action="append", dest="datasets")
-    ap.add_argument("--horas", type=int, default=24)
+    ap.add_argument("--horas", type=int, default=None)
+    ap.add_argument("--dias", type=int, default=None)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--xlsx")
     ap.add_argument("--abertos", action="store_true")
@@ -61,7 +62,8 @@ def main() -> int:
     print(f"[nicho] {len(uniq)} textos db={db}", file=sys.stderr)
 
     agora = datetime.now(TZ)
-    corte = agora - timedelta(hours=args.horas)
+    horas = args.dias * 24 if args.dias else (args.horas if args.horas is not None else 24)
+    corte = agora - timedelta(hours=horas)
     ufs = [u.strip().upper() for u in (args.uf or "").split(",") if u.strip()]
     keywords = [fold(k) for k in (args.keyword or "").split(",") if k.strip()]
     cidades = [fold(c) for c in (args.cidade or "").split(",") if c.strip()]

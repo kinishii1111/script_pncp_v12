@@ -171,14 +171,25 @@ def yyyymmdd(d: datetime) -> str:
     return d.strftime("%Y%m%d")
 
 
+def listar_dias(corte: datetime, fim: datetime | None = None) -> list[str]:
+    """Todos os yyyymmdd de corte.date() até fim.date() inclusive."""
+    fim = fim or datetime.now(TZ)
+    d = corte.date()
+    end = fim.date()
+    out: list[str] = []
+    while d <= end:
+        out.append(d.strftime("%Y%m%d"))
+        d += timedelta(days=1)
+    return out
+
+
 def coletar(
     corte: datetime,
     pausa: float,
     mods: tuple[int, ...],
     uf: str | None = None,
 ) -> list[dict]:
-    hoje = datetime.now(TZ)
-    dias = sorted({yyyymmdd(corte), yyyymmdd(hoje)})
+    dias = listar_dias(corte)
     visto: dict[str, dict] = {}
     for dia in dias:
         for mod in mods:

@@ -11,12 +11,11 @@ A geração “total” é lenta por causa do **429** do PNCP (8k registros, dez
 ```bash
 cd /home/kin/script_pncp_v12
 
-# 1x (ou de novo se caiu no meio — retoma)
-python3 pncp_coletar.py --horas 24
+# 30 dias, mods 6+8+4 (retoma se cair)
+python3 pncp_coletar.py --dias 30
+python3 pncp_status.py
 
-# N vezes, barato
-python3 pncp_filtrar.py --xlsx ~/Downloads/pncp-revisao-24h.xlsx --json
-python3 pncp_filtrar.py --abertos --uf SP --json
+python3 pncp_filtrar.py --dias 30 --xlsx ~/Downloads/pncp-revisao-30d.xlsx --json
 ```
 
 `--mods 6,8` na coleta se quiser só pregão+dispensa (bem mais rápido).
